@@ -1,0 +1,12 @@
+/ecommerce-app/*
+/ecommerce-ecallaw/*
+/vuejs-nginx-docker/*
+
+*.cnf
+*.pem
+ib_buffer_pool
+ib_logfile0
+ib_logfile1
+ibdata1
+ibtmp1
+*.sock
