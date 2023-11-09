@@ -1,0 +1,83 @@
+version: '3.9'
+
+services:
+  quasar-app: 
+    build: ./ecommerce-app
+    container_name: quasar-app
+    ports:
+      - 8888:8888
+    networks:
+      - web-aula
+    volumes:
+      - ./ecommerce-app:/app
+    command: ['yarn', 'quasar', 'dev']
+
+  vue-app: 
+    build: ./vuejs-nginx-docker
+    container_name: vue-app
+    ports:
+      - 8085:8085
+    networks:
+      - web-aula
+    volumes:
+      - ./vuejs-nginx-docker:/app
+    command: ['yarn', 'serve']
+
+  web-server: 
+    image: nginx:1.21.1
+    container_name: web-nginx
+    ports:
+      - 80:80
+    networks:
+      - web-aula
+    volumes:
+      - ./confs/servers:/etc/nginx/conf.d/
+      - ./ecommerce-ecallaw:/var/www/html
+
+  laravel-app: 
+    build: ./ecommerce-ecallaw
+    container_name: ecommerce-ecallaw
+    ports:
+      - 9000:9000
+    networks:
+      - web-aula
+    volumes:
+      - ./ecommerce-ecallaw:/var/www/html
+
+  soketi:
+    image: 'quay.io/soketi/soketi:latest-16-alpine'
+    environment:
+            SOKETI_DEBUG: '1'
+            SOKETI_METRICS_SERVER_PORT: '9601'
+    container_name: websocket
+    ports:
+      - '${SOKETI_PORT:-6001}:6001'
+      - '${SOKETI_METRICS_SERVER_PORT:-9601}:9601'
+    networks:
+      - web-aula
+
+  redis:
+    image: 'redis:7.2.3-alpine'
+    container_name: redis
+    ports:
+      - 6379:6379
+    networks:
+      - web-aula
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    volumes: 
+      - ./confs/mysql_db:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecommerce
+    ports:
+      - 3306:3306
+    networks: 
+      - web-aula
+
+networks: 
+  web-aula:
+    driver: bridge
